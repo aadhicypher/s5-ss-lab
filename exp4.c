@@ -1,43 +1,36 @@
 section .data
-    string db 'Hello, World!', 0
-    length equ $ - string
+    str db 'Hello World!', 0
 
 section .text
     global _start
 
 _start:
-    mov rsi, string
-    mov rcx, length
+    mov edx, str
 
-toggle_loop:
-    mov al, [rsi]
+toggle:
+    mov al, byte [edx]
     test al, al
-    jz end_loop
-    cmp al, 'A'
-    jl not_alpha
-    cmp al, 'Z'
-    jle to_lowercase
-    cmp al, 'a'
-    jl not_alpha
-    cmp al, 'z'
-    jle to_uppercase
+    jz done
+    mov ebx, edx
+    mov bl, [ebx]
+    cmp bl, 'a'
+    jl check_upper
+    cmp bl, 'z'
+    jg check_upper
+    sub byte [edx], 32
     jmp next_char
 
-to_lowercase:
-    or al, 0x20
-    jmp store_char
-
-to_uppercase:
-    and al, 0xDF
-
-store_char:
-    mov [rsi], al
+check_upper:
+    cmp bl, 'A'
+    jl next_char
+    cmp bl, 'Z'
+    jg next_char
+    add byte [edx], 32
 
 next_char:
-    inc rsi
-    loop toggle_loop
+    inc edx
+    jmp toggle
 
-end_loop:
-    mov rax, 60
-    xor rdi, rdi
-    syscall
+done:
+    mov eax, 1
+    int 0x80
